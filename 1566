@@ -1,0 +1,49 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define ALTURA_MAXIMA 231
+
+void ordenacaoPorContagem(int alturas[], int n) {
+    int contador[ALTURA_MAXIMA] = {0};
+    
+    for (int i = 0; i < n; i++) {
+        contador[alturas[i]]++;
+    }
+    
+    int indice = 0;
+    for (int altura = 20; altura < ALTURA_MAXIMA; altura++) {
+        while (contador[altura] > 0) {
+            alturas[indice] = altura;
+            indice++;
+            contador[altura]--;
+        }
+    }
+}
+
+int main() {
+    int numero_casos, numero_pessoas;
+    scanf("%d", &numero_casos);
+    
+    while (numero_casos--) {
+        scanf("%d", &numero_pessoas);
+        int *alturas = (int*)malloc(numero_pessoas * sizeof(int));
+        
+        for (int i = 0; i < numero_pessoas; i++) {
+            scanf("%d", &alturas[i]);
+        }
+        
+        ordenacaoPorContagem(alturas, numero_pessoas);
+        
+        for (int i = 0; i < numero_pessoas; i++) {
+            printf("%d", alturas[i]);
+            if (i < numero_pessoas - 1) {
+                printf(" ");
+            }
+        }
+        printf("\n");
+        
+        free(alturas);
+    }
+    
+    return 0;
+}
