@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_SEQ 1000
+#define MAX_LEN 1001
+
+char sequences[MAX_SEQ][MAX_LEN];
+int count = 0;
+
+void generate_sequences(const char *str, int index, char *current, int pos) {
+    if (pos > 0) {
+        current[pos] = '\0';
+        // Verificar se já não existe
+        int exists = 0;
+        for (int i = 0; i < count; i++) {
+            if (strcmp(sequences[i], current) == 0) {
+                exists = 1;
+                break;
+            }
+        }
+        if (!exists) {
+            strcpy(sequences[count], current);
+            count++;
+        }
+    }
+    
+    char used[26] = {0};
+    for (int i = index; str[i] != '\0'; i++) {
+        // Evitar caracteres repetidos no mesmo nível da recursão
+        if (used[str[i] - 'a']) {
+            continue;
+        }
+        used[str[i] - 'a'] = 1;
+        
+        current[pos] = str[i];
+        generate_sequences(str, i + 1, current, pos + 1);
+    }
+}
+
+int compare(const void *a, const void *b) {
+    return strcmp((char*)a, (char*)b);
+}
+
+int main() {
+    char str[MAX_LEN];
+    
+    while (scanf("%s", str) != EOF) {
+        count = 0;
+        char current[MAX_LEN];
+        
+        generate_sequences(str, 0, current, 0);
+        
+        qsort(sequences, count, sizeof(sequences[0]), compare);
+        
+        for (int i = 0; i < count; i++) {
+            printf("%s\n", sequences[i]);
+        }
+        printf("\n");
+    }
+    
+    return 0;
+}
