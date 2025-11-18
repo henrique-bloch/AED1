@@ -1,0 +1,79 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_SEQ 1000
+#define MAX_LEN 1001
+
+char sequences[MAX_SEQ][MAX_LEN];
+int count = 0;
+
+void generate_sequences(const char *str, int index, char *current, int pos) {
+    if (index >= strlen(str)) {
+        if (pos > 0) {
+            current[pos] = '\0';
+            // Verificar se já não existe
+            int exists = 0;
+            for (int i = 0; i < count; i++) {
+                if (strcmp(sequences[i], current) == 0) {
+                    exists = 1;
+                    break;
+                }
+            }
+            if (!exists) {
+                strcpy(sequences[count], current);
+                count++;
+            }
+        }
+        return;
+    }
+    
+    // Incluir o caractere atual
+    current[pos] = str[index];
+    generate_sequences(str, index + 1, current, pos + 1);
+    
+    // Pular caracteres repetidos
+    int next_index = index + 1;
+    while (next_index < strlen(str) && str[next_index] == str[index]) {
+        next_index++;
+    }
+    
+    // Não incluir o caractere atual
+    generate_sequences(str, next_index, current, pos);
+}
+
+int compare(const void *a, const void *b) {
+    return strcmp((char*)a, (char*)b);
+}
+
+int main() {
+    char str[MAX_LEN];
+    
+    while (scanf("%s", str) != EOF) {
+        count = 0;
+        char current[MAX_LEN];
+        
+        // Ordenar a string primeiro para facilitar
+        int len = strlen(str);
+        for (int i = 0; i < len - 1; i++) {
+            for (int j = i + 1; j < len; j++) {
+                if (str[i] > str[j]) {
+                    char temp = str[i];
+                    str[i] = str[j];
+                    str[j] = temp;
+                }
+            }
+        }
+        
+        generate_sequences(str, 0, current, 0);
+        
+        qsort(sequences, count, sizeof(sequences[0]), compare);
+        
+        for (int i = 0; i < count; i++) {
+            printf("%s\n", sequences[i]);
+        }
+        printf("\n");
+    }
+    
+    return 0;
+}
