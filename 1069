@@ -1,0 +1,102 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 1000
+
+int stack[MAX], queue[MAX], priority_queue[MAX];
+int stack_size = 0, queue_front = 0, queue_rear = 0, pq_size = 0;
+
+void stack_push(int x) {
+    stack[stack_size++] = x;
+}
+
+int stack_pop() {
+    if (stack_size == 0) return -1;
+    return stack[--stack_size];
+}
+
+void queue_push(int x) {
+    queue[queue_rear++] = x;
+}
+
+int queue_pop() {
+    if (queue_front == queue_rear) return -1;
+    return queue[queue_front++];
+}
+
+void pq_push(int x) {
+    // Inserir mantendo ordenado em ordem decrescente
+    int i = pq_size - 1;
+    while (i >= 0 && priority_queue[i] < x) {
+        priority_queue[i + 1] = priority_queue[i];
+        i--;
+    }
+    priority_queue[i + 1] = x;
+    pq_size++;
+}
+
+int pq_pop() {
+    if (pq_size == 0) return -1;
+    // Na fila de prioridade, sempre removemos o maior elemento (o primeiro)
+    int max = priority_queue[0];
+    // Deslocar os elementos restantes
+    for (int i = 0; i < pq_size - 1; i++) {
+        priority_queue[i] = priority_queue[i + 1];
+    }
+    pq_size--;
+    return max;
+}
+
+int main() {
+    int n;
+    while (scanf("%d", &n) != EOF) {
+        // Reset das estruturas para cada caso de teste
+        stack_size = 0;
+        queue_front = 0;
+        queue_rear = 0;
+        pq_size = 0;
+        
+        int is_stack = 1, is_queue = 1, is_pq = 1;
+        
+        for (int i = 0; i < n; i++) {
+            int op, x;
+            scanf("%d", &op);
+            
+            if (op == 1) {
+                scanf("%d", &x);
+                if (is_stack) stack_push(x);
+                if (is_queue) queue_push(x);
+                if (is_pq) pq_push(x);
+            } else {
+                scanf("%d", &x);
+                if (is_stack) {
+                    int popped = stack_pop();
+                    if (popped != x) is_stack = 0;
+                }
+                if (is_queue) {
+                    int popped = queue_pop();
+                    if (popped != x) is_queue = 0;
+                }
+                if (is_pq) {
+                    int popped = pq_pop();
+                    if (popped != x) is_pq = 0;
+                }
+            }
+        }
+        
+        int count = is_stack + is_queue + is_pq;
+        
+        if (count == 0) {
+            printf("impossible\n");
+        } else if (count == 1) {
+            if (is_stack) printf("stack\n");
+            else if (is_queue) printf("queue\n");
+            else printf("priority queue\n");
+        } else {
+            printf("not sure\n");
+        }
+    }
+    
+    return 0;
+}
