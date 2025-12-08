@@ -1,0 +1,90 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int val;
+    struct Node *left, *right;
+} Node;
+
+Node* insert(Node* root, int x) {
+    if (!root) {
+        root = (Node*)malloc(sizeof(Node));
+        root->val = x;
+        root->left = root->right = NULL;
+        return root;
+    }
+    if (x < root->val) root->left = insert(root->left, x);
+    else root->right = insert(root->right, x);
+    return root;
+}
+
+typedef struct {
+    Node* data[600];  // máximo de nós
+    int front, back;
+} Queue;
+
+void initQueue(Queue* q) {
+    q->front = q->back = 0;
+}
+
+void push(Queue* q, Node* n) {
+    q->data[q->back++] = n;
+}
+
+Node* pop(Queue* q) {
+    return q->data[q->front++];
+}
+
+int empty(Queue* q) {
+    return q->front == q->back;
+}
+
+void bfs(Node* root) {
+    Queue q;
+    initQueue(&q);
+
+    push(&q, root);
+    int first = 1;
+
+    while (!empty(&q)) {
+        Node* u = pop(&q);
+
+        if (!first) printf(" ");
+        printf("%d", u->val);
+        first = 0;
+
+        if (u->left) push(&q, u->left);
+        if (u->right) push(&q, u->right);
+    }
+}
+
+void freeTree(Node* root) {
+    if (!root) return;
+    freeTree(root->left);
+    freeTree(root->right);
+    free(root);
+}
+
+int main() {
+    int C;
+    scanf("%d", &C);
+
+    for (int cs = 1; cs <= C; cs++) {
+        int N, x;
+        scanf("%d", &N);
+
+        Node* root = NULL;
+        for (int i = 0; i < N; i++) {
+            scanf("%d", &x);
+            root = insert(root, x);
+        }
+
+        printf("Case %d:\n", cs);
+        bfs(root);
+        printf("\n\n");
+
+        freeTree(root);
+    }
+
+    return 0;
+}
