@@ -1,0 +1,26 @@
+#include <stdio.h>
+
+int main() {
+    int x, z, soma, contador;
+
+    scanf("%d", &x);
+
+    // Ler Z até ser maior que X
+    do {
+        scanf("%d", &z);
+    } while (z <= x);
+
+    soma = x;
+    contador = 1;  // já começamos contando o próprio X
+
+    int atual = x + 1;
+    while (soma <= z) {
+        soma += atual;
+        atual++;
+        contador++;
+    }
+
+    printf("%d\n", contador);
+
+    return 0;
+}
