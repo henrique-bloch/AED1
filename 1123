@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <string.h>
+#include <limits.h>
+
+#define INF 1000000000
+
+int adj[250][250];
+int dist[250];
+int used[250];
+int N, M, C, K;
+
+int main() {
+    while (1) {
+        scanf("%d %d %d %d", &N, &M, &C, &K);
+        if (N==0 && M==0 && C==0 && K==0) break;
+
+        for (int i=0;i<N;i++)
+            for (int j=0;j<N;j++)
+                adj[i][j] = INF;
+
+        for (int i=0;i<M;i++) {
+            int u,v,p;
+            scanf("%d %d %d",&u,&v,&p);
+            adj[u][v] = p;
+            adj[v][u] = p;
+        }
+
+        for (int i=0;i<C-1;i++) {
+            for (int j=0;j<N;j++) {
+                if (j != i+1) adj[i][j] = INF;
+            }
+        }
+
+        for (int i=0;i<N;i++) dist[i]=INF, used[i]=0;
+        dist[K]=0;
+
+        for (int it=0;it<N;it++) {
+            int u=-1;
+            for (int i=0;i<N;i++)
+                if (!used[i] && (u==-1 || dist[i]<dist[u]))
+                    u=i;
+
+            if (u==-1) break;
+            used[u]=1;
+
+            for (int v=0;v<N;v++) {
+                if (adj[u][v] < INF) {
+                    if (dist[v] > dist[u] + adj[u][v]) {
+                        dist[v] = dist[u] + adj[u][v];
+                    }
+                }
+            }
+        }
+
+        printf("%d\n", dist[C-1]);
+    }
+    return 0;
+}
