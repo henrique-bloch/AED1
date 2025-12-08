@@ -1,0 +1,50 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAXS 1000005
+#define HASH_SIZE 200003
+
+// hash node
+typedef struct Node {
+    char *s;
+    struct Node *next;
+} Node;
+
+Node* table[HASH_SIZE];
+
+unsigned long hash(char *s) {
+    unsigned long h = 5381;
+    int c;
+    while ((c = *s++))
+        h = ((h << 5) + h) + c;
+    return h % HASH_SIZE;
+}
+
+int insert(char *str) {
+    unsigned long h = hash(str);
+    Node *cur = table[h];
+    while (cur) {
+        if (strcmp(cur->s, str) == 0)
+            return 0;  // already exists
+        cur = cur->next;
+    }
+    // insert new
+    Node *newn = (Node*)malloc(sizeof(Node));
+    newn->s = strdup(str);
+    newn->next = table[h];
+    table[h] = newn;
+    return 1;
+}
+
+int main() {
+    char s[MAXS];
+    int count = 0;
+
+    while (scanf("%s", s) != EOF) {
+        count += insert(s);
+    }
+
+    printf("%d\n", count);
+    return 0;
+}
