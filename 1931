@@ -1,0 +1,111 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define INF 0x3f3f3f3f
+
+typedef struct Edge {
+    int to, w;
+    struct Edge *next;
+} Edge;
+
+Edge *adj[10005];
+int dist[10005][2];
+int visited[10005][2];
+
+typedef struct {
+    int node, cost, parity;
+} HeapNode;
+
+HeapNode heap[200005];
+int heapSize = 0;
+
+void push(int node, int cost, int parity) {
+    int i = ++heapSize;
+    heap[i].node = node;
+    heap[i].cost = cost;
+    heap[i].parity = parity;
+
+    while (i > 1 && heap[i].cost < heap[i/2].cost) {
+        HeapNode tmp = heap[i];
+        heap[i] = heap[i/2];
+        heap[i/2] = tmp;
+        i /= 2;
+    }
+}
+
+HeapNode pop() {
+    HeapNode ret = heap[1];
+    heap[1] = heap[heapSize--];
+    int i = 1;
+
+    while (1) {
+        int left = i * 2, right = left + 1, smallest = i;
+        if (left <= heapSize && heap[left].cost < heap[smallest].cost) smallest = left;
+        if (right <= heapSize && heap[right].cost < heap[smallest].cost) smallest = right;
+        if (smallest == i) break;
+
+        HeapNode tmp = heap[i];
+        heap[i] = heap[smallest];
+        heap[smallest] = tmp;
+        i = smallest;
+    }
+    return ret;
+}
+
+void addEdge(int u, int v, int w) {
+    Edge *e = malloc(sizeof(Edge));
+    e->to = v; e->w = w; e->next = adj[u];
+    adj[u] = e;
+}
+
+int main() {
+    int C, V;
+    while (scanf("%d %d", &C, &V) != EOF) {
+
+        // limpa tudo
+        for (int i = 1; i <= C; i++) adj[i] = NULL;
+        for (int i = 1; i <= C; i++)
+            dist[i][0] = dist[i][1] = INF,
+            visited[i][0] = visited[i][1] = 0;
+
+        heapSize = 0;
+
+        // lê o grafo
+        for (int i = 0; i < V; i++) {
+            int a, b, g;
+            scanf("%d %d %d", &a, &b, &g);
+            addEdge(a, b, g);
+            addEdge(b, a, g);
+        }
+
+        // Dijkstra
+        dist[1][0] = 0;
+        push(1, 0, 0);
+
+        while (heapSize > 0) {
+            HeapNode h = pop();
+            int u = h.node, p = h.parity;
+
+            if (visited[u][p]) continue;
+            visited[u][p] = 1;
+
+            for (Edge *e = adj[u]; e != NULL; e = e->next) {
+                int v = e->to;
+                int w = e->w;
+
+                int newp = p ^ 1; // mudou a paridade
+
+                if (dist[u][p] + w < dist[v][newp]) {
+                    dist[v][newp] = dist[u][p] + w;
+                    push(v, dist[v][newp], newp);
+                }
+            }
+        }
+
+        if (dist[C][0] == INF) printf("-1\n");
+        else printf("%d\n", dist[C][0]);
+    }
+
+    return 0;
+}
