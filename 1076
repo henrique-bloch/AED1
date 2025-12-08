@@ -1,0 +1,26 @@
+#include <stdio.h>
+
+int main() {
+    int T;
+    scanf("%d", &T);
+    while (T--) {
+        int N, V, A;
+        scanf("%d", &N);
+        scanf("%d %d", &V, &A);
+
+        int used[100][100] = {0};
+        int u, v;
+        int unique = 0;
+
+        for (int i = 0; i < A; i++) {
+            scanf("%d %d", &u, &v);
+            if (!used[u][v] && !used[v][u]) {
+                used[u][v] = used[v][u] = 1;
+                unique++;
+            }
+        }
+
+        printf("%d\n", 2 * unique);
+    }
+    return 0;
+}
