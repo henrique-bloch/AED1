@@ -1,0 +1,74 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef long long ll;
+
+typedef struct {
+    int u, v;
+    int w;
+} Edge;
+
+int cmp(const void *a, const void *b) {
+    Edge *x = (Edge*)a;
+    Edge *y = (Edge*)b;
+    return x->w - y->w;
+}
+
+int *parent, *rankUF;
+
+int find(int x) {
+    if (parent[x] == x) return x;
+    return parent[x] = find(parent[x]);  // Path compression
+}
+
+void unite(int a, int b) {
+    a = find(a);
+    b = find(b);
+    if (a == b) return;
+
+    if (rankUF[a] < rankUF[b]) parent[a] = b;
+    else if (rankUF[b] < rankUF[a]) parent[b] = a;
+    else { parent[b] = a; rankUF[a]++; }
+}
+
+int main() {
+    int M, N;
+
+    while (scanf("%d %d", &M, &N) == 2) {
+        if (M == 0 && N == 0) break;
+
+        Edge *edges = (Edge*)malloc(N * sizeof(Edge));
+        parent = (int*)malloc(M * sizeof(int));
+        rankUF = (int*)malloc(M * sizeof(int));
+
+        for (int i = 0; i < M; i++) {
+            parent[i] = i;
+            rankUF[i] = 0;
+        }
+
+        for (int i = 0; i < N; i++) {
+            scanf("%d %d %d", &edges[i].u, &edges[i].v, &edges[i].w);
+        }
+
+        qsort(edges, N, sizeof(Edge), cmp);
+
+        ll mst = 0;
+        int used = 0;
+
+        for (int i = 0; i < N && used < M - 1; i++) {
+            if (find(edges[i].u) != find(edges[i].v)) {
+                unite(edges[i].u, edges[i].v);
+                mst += edges[i].w;
+                used++;
+            }
+        }
+
+        printf("%lld\n", mst);
+
+        free(edges);
+        free(parent);
+        free(rankUF);
+    }
+
+    return 0;
+}
