@@ -1,0 +1,65 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef long long ll;
+
+typedef struct {
+    int u,v;
+    int w;
+} Edge;
+
+int cmpedge(const void *a, const void *b){
+    Edge *x = (Edge*)a;
+    Edge *y = (Edge*)b;
+    return (x->w > y->w) - (x->w < y->w);
+}
+
+int *parent;
+int *rnk;
+
+int findp(int x){
+    if(parent[x]==x) return x;
+    return parent[x]=findp(parent[x]);
+}
+
+void unite(int a,int b){
+    a=findp(a); b=findp(b);
+    if(a==b) return;
+    if(rnk[a]<rnk[b]) parent[a]=b;
+    else if(rnk[b]<rnk[a]) parent[b]=a;
+    else { parent[b]=a; rnk[a]++; }
+}
+
+int main(){
+    int m,n;
+    while(scanf("%d %d",&m,&n)==2){
+        if(m==0 && n==0) break;
+        Edge *e = (Edge*)malloc(sizeof(Edge)*n);
+        ll total = 0;
+        for(int i=0;i<n;i++){
+            int x,y,z;
+            scanf("%d %d %d",&x,&y,&z);
+            e[i].u = x; e[i].v = y; e[i].w = z;
+            total += z;
+        }
+        qsort(e,n,sizeof(Edge),cmpedge);
+        parent = (int*)malloc(sizeof(int)*m);
+        rnk = (int*)malloc(sizeof(int)*m);
+        for(int i=0;i<m;i++){ parent[i]=i; rnk[i]=0; }
+        ll mst = 0;
+        int taken = 0;
+        for(int i=0;i<n && taken < m-1;i++){
+            int u = e[i].u, v = e[i].v;
+            if(findp(u) != findp(v)){
+                unite(u,v);
+                mst += e[i].w;
+                taken++;
+            }
+        }
+        printf("%lld\n", total - mst);
+        free(e);
+        free(parent);
+        free(rnk);
+    }
+    return 0;
+}
