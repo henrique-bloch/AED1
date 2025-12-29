@@ -4,62 +4,71 @@
 typedef long long ll;
 
 typedef struct {
-    int u,v;
-    int w;
-} Edge;
+    int u, v, w;
+} Aresta;
 
-int cmpedge(const void *a, const void *b){
-    Edge *x = (Edge*)a;
-    Edge *y = (Edge*)b;
-    return (x->w > y->w) - (x->w < y->w);
+int comparar(const void *a, const void *b) {
+    Aresta *e1 = (Aresta*)a;
+    Aresta *e2 = (Aresta*)b;
+    return (e1->w > e2->w) - (e1->w < e2->w);
 }
 
-int *parent;
-int *rnk;
+int *pai;
+int *rank;
 
-int findp(int x){
-    if(parent[x]==x) return x;
-    return parent[x]=findp(parent[x]);
+int achar(int i) {
+    if (pai[i] == i) return i;
+    return pai[i] = achar(pai[i]);
 }
 
-void unite(int a,int b){
-    a=findp(a); b=findp(b);
-    if(a==b) return;
-    if(rnk[a]<rnk[b]) parent[a]=b;
-    else if(rnk[b]<rnk[a]) parent[b]=a;
-    else { parent[b]=a; rnk[a]++; }
-}
-
-int main(){
-    int m,n;
-    while(scanf("%d %d",&m,&n)==2){
-        if(m==0 && n==0) break;
-        Edge *e = (Edge*)malloc(sizeof(Edge)*n);
-        ll total = 0;
-        for(int i=0;i<n;i++){
-            int x,y,z;
-            scanf("%d %d %d",&x,&y,&z);
-            e[i].u = x; e[i].v = y; e[i].w = z;
-            total += z;
+void unir(int i, int j) {
+    int raiz_i = achar(i);
+    int raiz_j = achar(j);
+    if (raiz_i != raiz_j) {
+        if (rank[raiz_i] < rank[raiz_j]) pai[raiz_i] = raiz_j;
+        else if (rank[raiz_i] > rank[raiz_j]) pai[raiz_j] = raiz_i;
+        else {
+            pai[raiz_i] = raiz_j;
+            rank[raiz_j]++;
         }
-        qsort(e,n,sizeof(Edge),cmpedge);
-        parent = (int*)malloc(sizeof(int)*m);
-        rnk = (int*)malloc(sizeof(int)*m);
-        for(int i=0;i<m;i++){ parent[i]=i; rnk[i]=0; }
-        ll mst = 0;
-        int taken = 0;
-        for(int i=0;i<n && taken < m-1;i++){
-            int u = e[i].u, v = e[i].v;
-            if(findp(u) != findp(v)){
-                unite(u,v);
-                mst += e[i].w;
-                taken++;
+    }
+}
+
+int main() {
+    int m, n;
+    while (scanf("%d %d", &m, &n) == 2 && (m != 0 || n != 0)) {
+        Aresta *e = malloc(sizeof(Aresta) * n);
+        ll total = 0;
+
+        for (int i = 0; i < n; i++) {
+            scanf("%d %d %d", &e[i].u, &e[i].v, &e[i].w);
+            total += e[i].w;
+        }
+
+        qsort(e, n, sizeof(Aresta), comparar);
+
+        pai = malloc(sizeof(int) * m);
+        rank = malloc(sizeof(int) * m);
+        for (int i = 0; i < m; i++) {
+            pai[i] = i;
+            rank[i] = 0;
+        }
+
+        ll mst_peso = 0;
+        int cont = 0;
+        for (int i = 0; i < n && cont < m - 1; i++) {
+            if (achar(e[i].u) != achar(e[i].v)) {
+                unir(e[i].u, e[i].v);
+                mst_peso += e[i].w;
+                cont++;
             }
         }
-        printf("%lld\n", total - mst);
+
+        printf("%lld\n", total - mst_peso);
+
         free(e);
-        free(parent);
-        free(rnk);
+        free(pai);
+        free(rank);
     }
     return 0;
 }
