@@ -1,120 +1,110 @@
 #include <stdio.h>
 #include <string.h>
 
-#define INF 1000000000
-#define MAXN 505
+#define INFINITO 1000000000
+#define MAX_CIDADES 505
 
-int N, E;
-int adj[MAXN][MAXN];
-int scc[MAXN], comp_count;
-int index[MAXN], lowlink[MAXN], onstack[MAXN], stack[MAXN];
-int idx, top;
+int adjacencia[MAX_CIDADES][MAX_CIDADES];
+int id_pais[MAX_CIDADES], total_paises;
+int indice[MAX_CIDADES], link_baixo[MAX_CIDADES], na_pilha[MAX_CIDADES], pilha[MAX_CIDADES];
+int contador_idx, topo_pilha;
+int n_cidades, n_acordos;
 
-int min(int a, int b) { return a < b ? a : b; }
+int menor(int a, int b) { return a < b ? a : b; }
 
-void strongconnect(int v) {
-    index[v] = lowlink[v] = ++idx;
-    stack[top++] = v;
-    onstack[v] = 1;
 
-    for (int w = 1; w <= N; w++) {
-        if (adj[v][w] < INF) {
-            if (index[w] == 0) {
-                strongconnect(w);
-                lowlink[v] = min(lowlink[v], lowlink[w]);
-            } else if (onstack[w]) {
-                lowlink[v] = min(lowlink[v], index[w]);
+void encontrar_paises(int v) {
+    indice[v] = link_baixo[v] = ++contador_idx;
+    pilha[topo_pilha++] = v;
+    na_pilha[v] = 1;
+
+    for (int w = 1; w <= n_cidades; w++) {
+        if (adjacencia[v][w] < INFINITO) {
+            if (indice[w] == 0) {
+                encontrar_paises(w);
+                link_baixo[v] = menor(link_baixo[v], link_baixo[w]);
+            } else if (na_pilha[w]) {
+                link_baixo[v] = menor(link_baixo[v], indice[w]);
             }
         }
     }
 
-    if (lowlink[v] == index[v]) {
+    if (link_baixo[v] == indice[v]) {
         int w;
         do {
-            w = stack[--top];
-            onstack[w] = 0;
-            scc[w] = comp_count;
+            w = pilha[--topo_pilha];
+            na_pilha[w] = 0;
+            id_pais[w] = total_paises;
         } while (w != v);
-        comp_count++;
-    }
-}
-
-void tarjan() {
-    idx = 0; top = 0; comp_count = 0;
-    memset(index, 0, sizeof(index));
-    memset(onstack, 0, sizeof(onstack));
-    for (int v = 1; v <= N; v++) {
-        if (index[v] == 0) strongconnect(v);
+        total_paises++;
     }
 }
 
 int main() {
-    while (1) {
-        scanf("%d %d", &N, &E);
-        if (N == 0 && E == 0) break;
-
-        for (int i = 1; i <= N; i++) {
-            for (int j = 1; j <= N; j++) {
-                adj[i][j] = INF;
+    while (scanf("%d %d", &n_cidades, &n_acordos) && (n_cidades != 0)) {
+       
+        for (int i = 1; i <= n_cidades; i++) {
+            for (int j = 1; j <= n_cidades; j++) {
+                adjacencia[i][j] = INFINITO;
             }
-            adj[i][i] = 0;
+            adjacencia[i][i] = 0;
+            indice[i] = 0; 
         }
 
-        for (int i = 0; i < E; i++) {
-            int x, y, h;
-            scanf("%d %d %d", &x, &y, &h);
-            if (h < adj[x][y]) adj[x][y] = h;
+        for (int i = 0; i < n_acordos; i++) {
+            int origem, destino, horas;
+            scanf("%d %d %d", &origem, &destino, &horas);
+            adjacencia[origem][destino] = horas;
         }
 
-        tarjan();
-
-        // Construir grafo condensado
-        int comp_dist[comp_count][comp_count];
-        for (int i = 0; i < comp_count; i++) {
-            for (int j = 0; j < comp_count; j++) {
-                comp_dist[i][j] = INF;
-            }
-            comp_dist[i][i] = 0;
+       
+        contador_idx = 0; topo_pilha = 0; total_paises = 0;
+        for (int i = 1; i <= n_cidades; i++) {
+            if (indice[i] == 0) encontrar_paises(i);
         }
 
-        for (int i = 1; i <= N; i++) {
-            for (int j = 1; j <= N; j++) {
-                if (adj[i][j] < INF && scc[i] != scc[j]) {
-                    int ci = scc[i], cj = scc[j];
-                    if (adj[i][j] < comp_dist[ci][cj]) {
-                        comp_dist[ci][cj] = adj[i][j];
+       
+        int dist_paises[total_paises][total_paises];
+        for (int i = 0; i < total_paises; i++) {
+            for (int j = 0; j < total_paises; j++) dist_paises[i][j] = INFINITO;
+            dist_paises[i][i] = 0;
+        }
+
+       
+        for (int i = 1; i <= n_cidades; i++) {
+            for (int j = 1; j <= n_cidades; j++) {
+                if (adjacencia[i][j] < INFINITO && id_pais[i] != id_pais[j]) {
+                    int p_origem = id_pais[i], p_destino = id_pais[j];
+                    if (adjacencia[i][j] < dist_paises[p_origem][p_destino]) {
+                        dist_paises[p_origem][p_destino] = adjacencia[i][j];
                     }
                 }
             }
         }
 
-        // Floyd-Warshall nos componentes
-        for (int k = 0; k < comp_count; k++) {
-            for (int i = 0; i < comp_count; i++) {
-                if (comp_dist[i][k] == INF) continue;
-                for (int j = 0; j < comp_count; j++) {
-                    if (comp_dist[k][j] == INF) continue;
-                    if (comp_dist[i][k] + comp_dist[k][j] < comp_dist[i][j]) {
-                        comp_dist[i][j] = comp_dist[i][k] + comp_dist[k][j];
+       
+        for (int k = 0; k < total_paises; k++) {
+            for (int i = 0; i < total_paises; i++) {
+                if (dist_paises[i][k] == INFINITO) continue;
+                for (int j = 0; j < total_paises; j++) {
+                    if (dist_paises[k][j] < INFINITO && dist_paises[i][k] + dist_paises[k][j] < dist_paises[i][j]) {
+                        dist_paises[i][j] = dist_paises[i][k] + dist_paises[k][j];
                     }
                 }
             }
         }
 
-        int K;
-        scanf("%d", &K);
-        while (K--) {
+        int n_consultas;
+        scanf("%d", &n_consultas);
+        while (n_consultas--) {
             int o, d;
             scanf("%d %d", &o, &d);
-            if (scc[o] == scc[d]) {
+            if (id_pais[o] == id_pais[d]) {
                 printf("0\n");
             } else {
-                int ans = comp_dist[scc[o]][scc[d]];
-                if (ans >= INF) {
-                    printf("Nao e possivel entregar a carta\n");
-                } else {
-                    printf("%d\n", ans);
-                }
+                int resultado = dist_paises[id_pais[o]][id_pais[d]];
+                if (resultado >= INFINITO) printf("Nao e possivel entregar a carta\n");
+                else printf("%d\n", resultado);
             }
         }
         printf("\n");
