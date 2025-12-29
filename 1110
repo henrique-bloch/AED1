@@ -1,38 +1,44 @@
 #include <stdio.h>
 
 int main() {
-    int n;
-    
-    while (1) {
-        scanf("%d", &n);
-        if (n == 0) break;
+    int total_cartas;
+
+    while (scanf("%d", &total_cartas) && total_cartas != 0) {
         
-        int fila[100];
-        int inicio = 0, fim = n - 1;
-        
-        for (int i = 0; i < n; i++) {
-            fila[i] = i + 1;
+       
+        int baralho[500]; 
+        int topo = 0;
+        int base = total_cartas - 1;
+
+       
+        for (int i = 0; i < total_cartas; i++) {
+            baralho[i] = i + 1;
         }
-        
+
         printf("Discarded cards:");
+
+        int primeira_impressao = 1;
+
         
-        int primeiro = 1;
-        
-        while (fim - inicio >= 1) {
-            if (primeiro) {
-                printf(" %d", fila[inicio]);
-                primeiro = 0;
-            } else {
-                printf(", %d", fila[inicio]);
-            }
-            inicio++;
+        while (base - topo >= 1) {
             
-            fila[++fim] = fila[inicio];
-            inicio++;
+          
+            if (primeira_impressao) {
+                printf(" %d", baralho[topo]);
+                primeira_impressao = 0;
+            } else {
+                printf(", %d", baralho[topo]);
+            }
+            topo++; // Remove do topo
+
+            base++;
+            baralho[base] = baralho[topo];
+            topo++; // Remove a carta que foi movida do seu lugar original
         }
+
         
-        printf("\nRemaining card: %d\n", fila[inicio]);
+        printf("\nRemaining card: %d\n", baralho[topo]);
     }
-    
+
     return 0;
 }
