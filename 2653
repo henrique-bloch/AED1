@@ -2,49 +2,42 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAXS 1000005
-#define HASH_SIZE 200003
+#define TAM_HASH 200003
 
-// hash node
-typedef struct Node {
+typedef struct No {
     char *s;
-    struct Node *next;
-} Node;
+    struct No *prox;
+} No;
 
-Node* table[HASH_SIZE];
+No* tab[TAM_HASH];
 
-unsigned long hash(char *s) {
+unsigned long gera_hash(char *s) {
     unsigned long h = 5381;
     int c;
-    while ((c = *s++))
-        h = ((h << 5) + h) + c;
-    return h % HASH_SIZE;
+    while ((c = *s++)) h = ((h << 5) + h) + c;
+    return h % TAM_HASH;
 }
 
-int insert(char *str) {
-    unsigned long h = hash(str);
-    Node *cur = table[h];
-    while (cur) {
-        if (strcmp(cur->s, str) == 0)
-            return 0;  // already exists
-        cur = cur->next;
+int por(char *str) {
+    unsigned long h = gera_hash(str);
+    No *atual = tab[h];
+    while (atual) {
+        if (strcmp(atual->s, str) == 0) return 0;
+        atual = atual->prox;
     }
-    // insert new
-    Node *newn = (Node*)malloc(sizeof(Node));
-    newn->s = strdup(str);
-    newn->next = table[h];
-    table[h] = newn;
+    No *novo = malloc(sizeof(No));
+    novo->s = strdup(str);
+    novo->prox = tab[h];
+    tab[h] = novo;
     return 1;
 }
 
 int main() {
-    char s[MAXS];
-    int count = 0;
-
+    char s[1000005];
+    int total = 0;
     while (scanf("%s", s) != EOF) {
-        count += insert(s);
+        total += por(s);
     }
-
-    printf("%d\n", count);
+    printf("%d\n", total);
     return 0;
 }
