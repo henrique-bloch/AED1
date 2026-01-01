@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 
-int queue[20000], dist[20000];
-int front, back;
+int f[20000], d[10000];
+int ini, fim;
 
-int reverse(int x) {
+int inverte(int x) {
     int r = 0;
     while (x > 0) {
         r = r * 10 + (x % 10);
@@ -13,40 +13,39 @@ int reverse(int x) {
     return r;
 }
 
-int bfs(int A, int B) {
-    memset(dist, -1, sizeof(dist));
-    front = back = 0;
+int bfs(int a, int b) {
+    memset(d, -1, sizeof(d));
+    ini = fim = 0;
 
-    queue[back++] = A;
-    dist[A] = 0;
+    f[fim++] = a;
+    d[a] = 0;
 
-    while (front < back) {
-        int u = queue[front++];
+    while (ini < fim) {
+        int u = f[ini++];
 
-        if (u == B) return dist[u];
+        if (u == b) return d[u];
 
         int v1 = u + 1;
-        if (v1 < 10000 && dist[v1] == -1) {
-            dist[v1] = dist[u] + 1;
-            queue[back++] = v1;
+        if (v1 < 10000 && d[v1] == -1) {
+            d[v1] = d[u] + 1;
+            f[fim++] = v1;
         }
 
-        int v2 = reverse(u);
-        if (v2 < 10000 && dist[v2] == -1) {
-            dist[v2] = dist[u] + 1;
-            queue[back++] = v2;
+        int v2 = inverte(u);
+        if (v2 < 10000 && d[v2] == -1) {
+            d[v2] = d[u] + 1;
+            f[fim++] = v2;
         }
     }
     return -1;
 }
 
 int main() {
-    int T;
-    scanf("%d", &T);
-    while (T--) {
-        int A, B;
-        scanf("%d %d", &A, &B);
-        printf("%d\n", bfs(A, B));
+    int t, a, b;
+    if (scanf("%d", &t) != 1) return 0;
+    while (t--) {
+        scanf("%d %d", &a, &b);
+        printf("%d\n", bfs(a, b));
     }
     return 0;
 }
