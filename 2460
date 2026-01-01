@@ -1,38 +1,31 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-#define MAX 50000
+#define MAX_PESSOAS 50005
+#define MAX_ID 100005
 
 int main() {
-    int N, M;
-    int fila[MAX];
-    int saiu[100001] = {0}; // Para marcar quem saiu (índice = identificador)
+    int n, m, id;
+    int fila[MAX_PESSOAS];
+    int fora[MAX_ID] = {0}; // Vetor de marcação
     
-    // Lê quantidade inicial de pessoas
-    scanf("%d", &N);
-    
-    // Lê os identificadores iniciais
-    for (int i = 0; i < N; i++) {
+    // Lê estado inicial
+    if (scanf("%d", &n) != 1) return 0;
+    for (int i = 0; i < n; i++) {
         scanf("%d", &fila[i]);
     }
     
-    // Lê quantidade de pessoas que saíram
-    scanf("%d", &M);
-    
-    // Lê e marca quem saiu
-    for (int i = 0; i < M; i++) {
-        int id;
+    // Lê quem saiu e marca no vetor
+    scanf("%d", &m);
+    for (int i = 0; i < m; i++) {
         scanf("%d", &id);
-        saiu[id] = 1; // Marca que esta pessoa saiu
+        fora[id] = 1;
     }
     
-    // Imprime apenas quem não saiu
+    // Imprime quem permaneceu na ordem original
     int primeiro = 1;
-    for (int i = 0; i < N; i++) {
-        if (!saiu[fila[i]]) {
-            if (!primeiro) {
-                printf(" ");
-            }
+    for (int i = 0; i < n; i++) {
+        if (!fora[fila[i]]) {
+            if (!primeiro) printf(" ");
             printf("%d", fila[i]);
             primeiro = 0;
         }
