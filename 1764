@@ -4,71 +4,71 @@
 typedef long long ll;
 
 typedef struct {
-    int u, v;
-    int w;
-} Edge;
+    int u, v, w;
+} Aresta;
 
-int cmp(const void *a, const void *b) {
-    Edge *x = (Edge*)a;
-    Edge *y = (Edge*)b;
+// Comparação para ordenar por peso (distância) crescente
+int comp(const void *a, const void *b) {
+    Aresta *x = (Aresta*)a;
+    Aresta *y = (Aresta*)b;
     return x->w - y->w;
 }
 
-int *parent, *rankUF;
+int *pai, *rank;
 
-int find(int x) {
-    if (parent[x] == x) return x;
-    return parent[x] = find(parent[x]);  // Path compression
+// Busca o mestre do grupo com compressão de caminho
+int achar(int x) {
+    if (pai[x] == x) return x;
+    return pai[x] = achar(pai[x]);
 }
 
-void unite(int a, int b) {
-    a = find(a);
-    b = find(b);
-    if (a == b) return;
-
-    if (rankUF[a] < rankUF[b]) parent[a] = b;
-    else if (rankUF[b] < rankUF[a]) parent[b] = a;
-    else { parent[b] = a; rankUF[a]++; }
+// Une dois grupos distintos
+void unir(int a, int b) {
+    a = achar(a);
+    b = achar(b);
+    if (a != b) {
+        if (rank[a] < rank[b]) pai[a] = b;
+        else if (rank[b] < rank[a]) pai[b] = a;
+        else { pai[b] = a; rank[a]++; }
+    }
 }
 
 int main() {
-    int M, N;
+    int m, n; // m: cidades, n: estradas
 
-    while (scanf("%d %d", &M, &N) == 2) {
-        if (M == 0 && N == 0) break;
+    while (scanf("%d %d", &m, &n) == 2 && (m != 0 || n != 0)) {
+        Aresta *e = (Aresta*)malloc(n * sizeof(Aresta));
+        pai = (int*)malloc(m * sizeof(int));
+        rank = (int*)malloc(m * sizeof(int));
 
-        Edge *edges = (Edge*)malloc(N * sizeof(Edge));
-        parent = (int*)malloc(M * sizeof(int));
-        rankUF = (int*)malloc(M * sizeof(int));
-
-        for (int i = 0; i < M; i++) {
-            parent[i] = i;
-            rankUF[i] = 0;
+        for (int i = 0; i < m; i++) {
+            pai[i] = i;
+            rank[i] = 0;
         }
 
-        for (int i = 0; i < N; i++) {
-            scanf("%d %d %d", &edges[i].u, &edges[i].v, &edges[i].w);
+        for (int i = 0; i < n; i++) {
+            scanf("%d %d %d", &e[i].u, &e[i].v, &e[i].w);
         }
 
-        qsort(edges, N, sizeof(Edge), cmp);
+        // Algoritmo de Kruskal: ordenar e processar
+        qsort(e, n, sizeof(Aresta), comp);
 
-        ll mst = 0;
-        int used = 0;
+        ll peso_total = 0;
+        int cont = 0;
 
-        for (int i = 0; i < N && used < M - 1; i++) {
-            if (find(edges[i].u) != find(edges[i].v)) {
-                unite(edges[i].u, edges[i].v);
-                mst += edges[i].w;
-                used++;
+        for (int i = 0; i < n && cont < m - 1; i++) {
+            if (achar(e[i].u) != achar(e[i].v)) {
+                unir(e[i].u, e[i].v);
+                peso_total += e[i].w;
+                cont++;
             }
         }
 
-        printf("%lld\n", mst);
+        printf("%lld\n", peso_total);
 
-        free(edges);
-        free(parent);
-        free(rankUF);
+        free(e);
+        free(pai);
+        free(rank);
     }
-
     return 0;
 }
