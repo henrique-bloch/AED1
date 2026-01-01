@@ -1,111 +1,79 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
 
 #define INF 0x3f3f3f3f
 
-typedef struct Edge {
-    int to, w;
-    struct Edge *next;
-} Edge;
-
-Edge *adj[10005];
-int dist[10005][2];
-int visited[10005][2];
+typedef struct E {
+    int para, p;
+    struct E *prox;
+} E;
 
 typedef struct {
-    int node, cost, parity;
-} HeapNode;
+    int no, custo, par;
+} Item;
 
-HeapNode heap[200005];
-int heapSize = 0;
+E *adj[10005];
+int d[10005][2], vis[10005][2], tam;
+Item heap[200005];
 
-void push(int node, int cost, int parity) {
-    int i = ++heapSize;
-    heap[i].node = node;
-    heap[i].cost = cost;
-    heap[i].parity = parity;
-
-    while (i > 1 && heap[i].cost < heap[i/2].cost) {
-        HeapNode tmp = heap[i];
+void push(int no, int c, int p) {
+    int i = ++tam;
+    while (i > 1 && c < heap[i/2].custo) {
         heap[i] = heap[i/2];
-        heap[i/2] = tmp;
         i /= 2;
     }
+    heap[i].no = no; heap[i].custo = c; heap[i].par = p;
 }
 
-HeapNode pop() {
-    HeapNode ret = heap[1];
-    heap[1] = heap[heapSize--];
-    int i = 1;
-
-    while (1) {
-        int left = i * 2, right = left + 1, smallest = i;
-        if (left <= heapSize && heap[left].cost < heap[smallest].cost) smallest = left;
-        if (right <= heapSize && heap[right].cost < heap[smallest].cost) smallest = right;
-        if (smallest == i) break;
-
-        HeapNode tmp = heap[i];
-        heap[i] = heap[smallest];
-        heap[smallest] = tmp;
-        i = smallest;
+Item pop() {
+    Item r = heap[1];
+    Item u = heap[tam--];
+    int i = 1, f;
+    while (i * 2 <= tam) {
+        f = i * 2;
+        if (f < tam && heap[f+1].custo < heap[f].custo) f++;
+        if (u.custo <= heap[f].custo) break;
+        heap[i] = heap[f];
+        i = f;
     }
-    return ret;
+    heap[i] = u;
+    return r;
 }
 
-void addEdge(int u, int v, int w) {
-    Edge *e = malloc(sizeof(Edge));
-    e->to = v; e->w = w; e->next = adj[u];
+void add(int u, int v, int p) {
+    E *e = malloc(sizeof(E));
+    e->para = v; e->p = p; e->prox = adj[u];
     adj[u] = e;
 }
 
 int main() {
-    int C, V;
-    while (scanf("%d %d", &C, &V) != EOF) {
-
-        // limpa tudo
-        for (int i = 1; i <= C; i++) adj[i] = NULL;
-        for (int i = 1; i <= C; i++)
-            dist[i][0] = dist[i][1] = INF,
-            visited[i][0] = visited[i][1] = 0;
-
-        heapSize = 0;
-
-        // lê o grafo
-        for (int i = 0; i < V; i++) {
-            int a, b, g;
-            scanf("%d %d %d", &a, &b, &g);
-            addEdge(a, b, g);
-            addEdge(b, a, g);
+    int c, v, a, b, g;
+    while (scanf("%d %d", &c, &v) != EOF) {
+        for (int i = 1; i <= c; i++) {
+            adj[i] = NULL;
+            d[i][0] = d[i][1] = INF;
+            vis[i][0] = vis[i][1] = 0;
         }
-
-        // Dijkstra
-        dist[1][0] = 0;
-        push(1, 0, 0);
-
-        while (heapSize > 0) {
-            HeapNode h = pop();
-            int u = h.node, p = h.parity;
-
-            if (visited[u][p]) continue;
-            visited[u][p] = 1;
-
-            for (Edge *e = adj[u]; e != NULL; e = e->next) {
-                int v = e->to;
-                int w = e->w;
-
-                int newp = p ^ 1; // mudou a paridade
-
-                if (dist[u][p] + w < dist[v][newp]) {
-                    dist[v][newp] = dist[u][p] + w;
-                    push(v, dist[v][newp], newp);
+        tam = 0;
+        while (v--) {
+            scanf("%d %d %d", &a, &b, &g);
+            add(a, b, g); add(b, a, g);
+        }
+        d[1][0] = 0; push(1, 0, 0);
+        while (tam > 0) {
+            Item h = pop();
+            if (vis[h.no][h.par]) continue;
+            vis[h.no][h.par] = 1;
+            for (E *e = adj[h.no]; e; e = e->prox) {
+                int np = h.par ^ 1;
+                if (d[h.no][h.par] + e->p < d[e->para][np]) {
+                    d[e->para][np] = d[h.no][h.par] + e->p;
+                    push(e->para, d[e->para][np], np);
                 }
             }
         }
-
-        if (dist[C][0] == INF) printf("-1\n");
-        else printf("%d\n", dist[C][0]);
+        if (d[c][0] == INF) printf("-1\n");
+        else printf("%d\n", d[c][0]);
     }
-
     return 0;
 }
