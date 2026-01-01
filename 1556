@@ -2,59 +2,52 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_SEQ 1000
-#define MAX_LEN 1001
+#define MAX_S 1000
+#define MAX_L 1001
 
-char sequences[MAX_SEQ][MAX_LEN];
-int count = 0;
+char lista[MAX_S][MAX_L];
+int qtd = 0;
 
-void generate_sequences(const char *str, int index, char *current, int pos) {
+void gera(const char *orig, int idx, char *atual, int pos) {
     if (pos > 0) {
-        current[pos] = '\0';
-        // Verificar se já não existe
-        int exists = 0;
-        for (int i = 0; i < count; i++) {
-            if (strcmp(sequences[i], current) == 0) {
-                exists = 1;
+        atual[pos] = '\0';
+        int existe = 0;
+        for (int i = 0; i < qtd; i++) {
+            if (strcmp(lista[i], atual) == 0) {
+                existe = 1;
                 break;
             }
         }
-        if (!exists) {
-            strcpy(sequences[count], current);
-            count++;
+        if (!existe) {
+            strcpy(lista[qtd++], atual);
         }
     }
     
-    char used[26] = {0};
-    for (int i = index; str[i] != '\0'; i++) {
-        // Evitar caracteres repetidos no mesmo nível da recursão
-        if (used[str[i] - 'a']) {
-            continue;
-        }
-        used[str[i] - 'a'] = 1;
+    char uso[26] = {0};
+    for (int i = idx; orig[i] != '\0'; i++) {
+        if (uso[orig[i] - 'a']) continue;
+        uso[orig[i] - 'a'] = 1;
         
-        current[pos] = str[i];
-        generate_sequences(str, i + 1, current, pos + 1);
+        atual[pos] = orig[i];
+        gera(orig, i + 1, atual, pos + 1);
     }
 }
 
-int compare(const void *a, const void *b) {
+int comp(const void *a, const void *b) {
     return strcmp((char*)a, (char*)b);
 }
 
 int main() {
-    char str[MAX_LEN];
+    char s[MAX_L], atual[MAX_L];
     
-    while (scanf("%s", str) != EOF) {
-        count = 0;
-        char current[MAX_LEN];
+    while (scanf("%s", s) != EOF) {
+        qtd = 0;
+        gera(s, 0, atual, 0);
         
-        generate_sequences(str, 0, current, 0);
+        qsort(lista, qtd, sizeof(lista[0]), comp);
         
-        qsort(sequences, count, sizeof(sequences[0]), compare);
-        
-        for (int i = 0; i < count; i++) {
-            printf("%s\n", sequences[i]);
+        for (int i = 0; i < qtd; i++) {
+            printf("%s\n", lista[i]);
         }
         printf("\n");
     }
