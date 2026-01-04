@@ -2,33 +2,33 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define TAM_HASH 200003
+#define TAMANHO_HASH 200003
 
 typedef struct No {
-    char *s;
-    struct No *prox;
+    char *texto;
+    struct No *proximo;
 } No;
 
-No* tab[TAM_HASH];
+No* tabela[TAMANHO_HASH];
 
-unsigned long gera_hash(char *s) {
+unsigned long gerar_hash(char *s) {
     unsigned long h = 5381;
     int c;
     while ((c = *s++)) h = ((h << 5) + h) + c;
-    return h % TAM_HASH;
+    return h % TAMANHO_HASH;
 }
 
-int por(char *str) {
-    unsigned long h = gera_hash(str);
-    No *atual = tab[h];
+int inserir(char *palavra) {
+    unsigned long h = gerar_hash(palavra);
+    No *atual = tabela[h];
     while (atual) {
-        if (strcmp(atual->s, str) == 0) return 0;
-        atual = atual->prox;
+        if (strcmp(atual->texto, palavra) == 0) return 0;
+        atual = atual->proximo;
     }
     No *novo = malloc(sizeof(No));
-    novo->s = strdup(str);
-    novo->prox = tab[h];
-    tab[h] = novo;
+    novo->texto = strdup(palavra);
+    novo->proximo = tabela[h];
+    tabela[h] = novo;
     return 1;
 }
 
@@ -36,7 +36,7 @@ int main() {
     char s[1000005];
     int total = 0;
     while (scanf("%s", s) != EOF) {
-        total += por(s);
+        total += inserir(s);
     }
     printf("%d\n", total);
     return 0;
